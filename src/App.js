@@ -15,7 +15,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import CountUp from 'react-countup';
 import Balance from './controllers/Balance';
 import WalletValidator from 'wallet-address-validator';
-import socket from './services/io';
+// import socket from './services/io';
 import 'react-toastify/dist/ReactToastify.css';
 function App() {
 
@@ -23,34 +23,51 @@ function App() {
 	const [confirmed, setConfirmed] = useState(0)
 	const [unconfirmed, setUnconfirmed] = useState(0)
 	const [error, setError] = useState('')
-	const [checked, setChecked] = useState(true);
-
+	const [checked, setChecked] = useState(null);
 	const [loading, setLoading] = useState(false)
+	const [intervalEnabled, setIntervalEnabled] = useState(false)
 
 	useEffect(() => {
 		if (checked) {
-			socket.on('new_confirmed', data => {
-				setConfirmed(data)
-			})
-			socket.on('new_unconfirmed', data => {
-				setUnconfirmed(data)
-			})
+			console.log('here', checked);
+			setIntervalEnabled(setInterval(handleSubmit, 12000))
+			// socket.on('new_confirmed', data => {
+			// 	setConfirmed(data)
+			// })
+			// socket.on('new_unconfirmed', data => {
+			// 	setUnconfirmed(data)
+			// })
+		} else {
+			setIntervalEnabled(null)
+			clearInterval(intervalEnabled)
 		}
+
 	}, [checked])
 
-	async function handleSubmit() {
+	async function handleSubmit(e) {
+		console.log('E->1', e);
+		if (e) {
+			console.log('E->', e);
+			e.preventDefault()
+		}
 		setLoading(true)
 		const valid = WalletValidator.validate(value)
 		if (!valid) {
 			setLoading(false)
-			return toast.warn('Your address is not valid!')
+			if (!checked) {
+				return toast.warn('Your address is not valid!')
+			}
+			return
 		}
 		const response = await Balance.view(value)
+		console.log('response', response);
 		if (response?.status === 200) {
 			setConfirmed(response?.data?.confirmed)
 			setUnconfirmed(response?.data?.unconfirmed)
 			setLoading(false)
-			toast.success(`Success`);
+			if (!checked) {
+				toast.success(`Success`);
+			}
 		}
 		if (response?.status !== 200) {
 			setError(response?.error.response?.data?.message)
@@ -59,7 +76,7 @@ function App() {
 		setLoading(false)
 	};
 
-	return (
+	return (console.log('checked', checked, value),
 		<Grommet theme={grommet} background="#0b0b1e">
 			<ToastContainer />
 			<Grid pad={{ bottom: 'xlarge' }} background="#0b0b1e" align='center' columns={{ count: 'fit', size: 'medium' }} gap="medium">
@@ -91,18 +108,19 @@ function App() {
 							<Box align='center' background="linear-gradient(80deg,#DC3F89 0%,#903EDD 100%)" margin='medium' round='medium' pad={{ horizontal: 'medium' }} >
 								<Heading level={1} size="xsmall">Confirmed Balance</Heading>
 								<Heading level={1} size="xsmall">
-									<CountUp start={0} end={confirmed} duration={5} separator="," decimal="." />
+									<CountUp start={0} end={confirmed} duration={5} />
 								</Heading>
 							</Box>
 							<Box align='center' background="linear-gradient(80deg,#DC3F89 0%,#903EDD 100%)" margin='medium' round='medium' pad={{ horizontal: 'medium' }} >
 								<Heading level={1} size="xsmall">Unconfirmed Balance</Heading>
 								<Heading level={1} size="xsmall">
-									<CountUp start={0} end={unconfirmed} duration={5} separator="," decimal="." />
+									<CountUp start={0} end={unconfirmed} duration={5} />
 								</Heading>
 							</Box>
 							<Box align='center' background="linear-gradient(80deg,#DC3F89 0%,#903EDD 100%)" margin='medium' round='medium' pad={{ horizontal: 'medium' }} >
-								<Heading level={1} size="xsmall">Web Socket?</Heading>
+								<Heading level={1} size="xsmall">Auto Update?</Heading>
 								<CheckBox
+									disabled={!WalletValidator.validate(value)}
 									checked={checked}
 									label={checked ? 'Enabled' : 'Desabled'}
 									onChange={({ target }) => setChecked(target.checked)}
