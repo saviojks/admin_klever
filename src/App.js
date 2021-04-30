@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
 	Box,
-	Form,
 	FormField,
 	Grid,
 	Grommet,
@@ -29,7 +28,6 @@ function App() {
 
 	useEffect(() => {
 		if (checked) {
-			console.log('here', checked);
 			setIntervalEnabled(setInterval(handleSubmit, 12000))
 			// socket.on('new_confirmed', data => {
 			// 	setConfirmed(data)
@@ -45,9 +43,7 @@ function App() {
 	}, [checked])
 
 	async function handleSubmit(e) {
-		console.log('E->1', e);
 		if (e) {
-			console.log('E->', e);
 			e.preventDefault()
 		}
 		setLoading(true)
@@ -60,7 +56,6 @@ function App() {
 			return
 		}
 		const response = await Balance.view(value)
-		console.log('response', response);
 		if (response?.status === 200) {
 			setConfirmed(response?.data?.confirmed)
 			setUnconfirmed(response?.data?.unconfirmed)
@@ -76,7 +71,7 @@ function App() {
 		setLoading(false)
 	};
 
-	return (console.log('checked', checked, value),
+	return (
 		<Grommet theme={grommet} background="#0b0b1e">
 			<ToastContainer />
 			<Grid pad={{ bottom: 'xlarge' }} background="#0b0b1e" align='center' columns={{ count: 'fit', size: 'medium' }} gap="medium">
@@ -84,25 +79,16 @@ function App() {
 					<Box gridArea="header" background="brand" background="linear-gradient(80deg,#DC3F89 0%,#903EDD 100%)" >
 						<Heading margin={{ left: 'xlarge' }} level={1} size="xsmall"> Bitcoin address </Heading>
 					</Box>
-					<Box align='stretch' margin='medium' align='stretch' >
-						<Box background="linear-gradient(80deg,#DC3F89 0%,#903EDD 100%)" margin='large' round='medium' direction='row' >
-							<Form>
-								<FormField
-									htmlFor="text-input-id"
-									name="example1"
-									label="Your Address"
-									error={error}
-								>
-									<TextInput
-										id="example1-id"
-										name="example1"
-										value={value}
-										onChange={({ target }) => setValue(target.value)}
-									/>
-								</FormField>
-								<Button disabled={loading || value?.length < 1} margin='medium' type="submit" label="Submit" onClick={() => handleSubmit()} />
-								<Button disabled={loading} margin='medium' type="submit" label="Clean" onClick={() => { setError(''); setValue('') }} />
-							</Form>
+					<Box margin='medium' align='stretch' >
+						<Box align='stretch' background="linear-gradient(80deg,#DC3F89 0%,#903EDD 100%)" margin='large' round='medium' direction='column' >
+
+							<FormField htmlFor="text-input-id" name="example1" label="Your Address" error={error} >
+								<TextInput id="example1-id" name="example1" value={value} onChange={({ target }) => setValue(target.value)} />
+							</FormField>
+							<Box align='center' direction='row-responsive' >
+								<Button size='medium' disabled={loading || value?.length < 1} margin='medium' type="submit" label="Submit" onClick={() => handleSubmit()} />
+								<Button size='medium' disabled={loading} margin='medium' type="submit" label="Clean" onClick={() => { setError(''); setValue('') }} />
+							</Box>
 						</Box>
 						<Box align='stretch' margin='large' round='medium' direction='row'  >
 							<Box align='center' background="linear-gradient(80deg,#DC3F89 0%,#903EDD 100%)" margin='medium' round='medium' pad={{ horizontal: 'medium' }} >
